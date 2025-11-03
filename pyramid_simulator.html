@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulator Piramida Makanan Interaktif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            border: none;
+            background: #e2e8f0;
+            color: #4a5568;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Piramida Builder */
+        .builder-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .organism-bank {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .organism-bank h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .organism-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            background: #667eea;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .organism-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .organism-card {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: move;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .organism-card:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+
+        .pyramid-area {
+            background: linear-gradient(to bottom, #e6f2ff 0%, #ffe6e6 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #cbd5e0;
+        }
+
+        .pyramid-level {
+            background: white;
+            margin-bottom: 10px;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 80px;
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pyramid-level.drag-over {
+            background: #e6fffa;
+            border-color: #38b2ac;
+        }
+
+        .level-label {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .level-organisms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .placed-organism {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .placed-organism:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(72,187,120,0.4);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(252,129,129,0.4);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .feedback.success {
+            background: #c6f6d5;
+            border: 2px solid #48bb78;
+            color: #22543d;
+        }
+
+        .feedback.error {
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            color: #742a2a;
+        }
+
+        /* Simulator Section */
+        .simulator {
+            text-align: center;
+        }
+
+        .ecosystem-selector {
+            margin-bottom: 30px;
+        }
+
+        .ecosystem-selector select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 2px solid #cbd5e0;
+            background: white;
+            cursor: pointer;
+        }
+
+        .pyramid-visual {
+            position: relative;
+            height: 500px;
+            margin: 30px auto;
+            max-width: 600px;
+        }
+
+        .pyramid-tier {
+            position: absolute;
+            width: 100%;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.5s;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .pyramid-tier:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .tier-1 { 
+            bottom: 0; 
+            width: 100%; 
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        .tier-2 { 
+            bottom: 120px; 
+            width: 75%; 
+            left: 12.5%;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        }
+        .tier-3 { 
+            bottom: 240px; 
+            width: 50%; 
+            left: 25%;
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        }
+        .tier-4 { 
+            bottom: 360px; 
+            width: 25%; 
+            left: 37.5%;
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        .info-panel {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .info-panel h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .builder-area {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .pyramid-visual {
+                height: 400px;
+            }
+
+            .pyramid-tier {
+                height: 80px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Simulator Piramida Makanan 🦅</h1>
+        <p class="subtitle">Media Pembelajaran Interaktif - IPAS Kelas V</p>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('builder')">🏗️ Bangun Piramida</button>
+            <button class="tab-btn" onclick="showTab('simulator')">📊 Simulasi Ekosistem</button>
+        </div>
+
+        <!-- Tab 1: Pyramid Builder -->
+        <div id="builder" class="tab-content active">
+            <h2 style="color: #2d3748; margin-bottom: 20px;">🏗️ Bangun Piramida Makananmu!</h2>
+            <p style="color: #718096; margin-bottom: 20px;">Seret organisme dari bank ke tingkat piramida yang sesuai!</p>
+
+            <div class="builder-area">
+                <div class="organism-bank">
+                    <h3>🏦 Bank Organisme</h3>
+                    
+                    <div class="organism-category">
+                        <div class="category-title">🌱 Produsen</div>
+                        <div class="organism-list">
+                            <div class="organism-card" draggable="true" data-type="produsen">🌾 Rumput</div>
+                            <div class="organism-card" draggable="true" data-type="produsen">🌾 Padi</div>
+                            <div class="organism-card" draggable="true" data-type="produsen">🌿 Alga</div>
+                            <div class="organism-card" draggable="true" data-type="produsen">🌱 Jagung</div>
+                        </div>
+                    </div>
+
+                    <div class="organism-category">
+                        <div class="category-title">🦗 Konsumen Primer (Herbivora)</div>
+                        <div class="organism-list">
+                            <div class="organism-card" draggable="true" data-type="konsumen1">🦗 Belalang</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen1">🐰 Kelinci</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen1">🐛 Ulat</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen1">🐭 Tikus</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen1">🐮 Sapi</div>
+                        </div>
+                    </div>
+
+                    <div class="organism-category">
+                        <div class="category-title">🐸 Konsumen Sekunder</div>
+                        <div class="organism-list">
+                            <div class="organism-card" draggable="true" data-type="konsumen2">🐸 Katak</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen2">🐍 Ular Kecil</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen2">🐦 Burung</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen2">🦎 Cicak</div>
+                        </div>
+                    </div>
+
+                    <div class="organism-category">
+                        <div class="category-title">🦅 Konsumen Tersier (Predator Puncak)</div>
+                        <div class="organism-list">
+                            <div class="organism-card" draggable="true" data-type="konsumen3">🦅 Elang</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen3">🐍 Ular Besar</div>
+                            <div class="organism-card" draggable="true" data-type="konsumen3">🦊 Rubah</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pyramid-area">
+                    <h3 style="color: #2d3748; margin-bottom: 15px;">🔺 Piramida Makanan</h3>
+                    
+                    <div class="pyramid-level" data-level="konsumen3">
+                        <div class="level-label">🔴 Tingkat IV - Konsumen Tersier</div>
+                        <div class="level-organisms" id="level-4"></div>
+                    </div>
+
+                    <div class="pyramid-level" data-level="konsumen2">
+                        <div class="level-label">🟠 Tingkat III - Konsumen Sekunder</div>
+                        <div class="level-organisms" id="level-3"></div>
+                    </div>
+
+                    <div class="pyramid-level" data-level="konsumen1">
+                        <div class="level-label">🟡 Tingkat II - Konsumen Primer</div>
+                        <div class="level-organisms" id="level-2"></div>
+                    </div>
+
+                    <div class="pyramid-level" data-level="produsen">
+                        <div class="level-label">🟢 Tingkat I - Produsen</div>
+                        <div class="level-organisms" id="level-1"></div>
+                    </div>
+
+                    <button class="btn-check" onclick="checkPyramid()">✅ Periksa Jawabanku</button>
+                    <button class="btn-reset" onclick="resetPyramid()">🔄 Reset</button>
+
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Simulator -->
+        <div id="simulator" class="tab-content">
+            <div class="simulator">
+                <h2 style="color: #2d3748; margin-bottom: 20px;">📊 Simulasi Transfer Energi</h2>
+                
+                <div class="ecosystem-selector">
+                    <label style="font-size: 18px; font-weight: 600; color: #2d3748;">Pilih Ekosistem:</label><br><br>
+                    <select id="ecosystemSelect" onchange="changeEcosystem()">
+                        <option value="sawah">🌾 Ekosistem Sawah</option>
+                        <option value="hutan">🌳 Ekosistem Hutan</option>
+                        <option value="laut">🌊 Ekosistem Laut</option>
+                        <option value="padang">🌿 Padang Rumput</option>
+                    </select>
+                </div>
+
+                <div class="pyramid-visual" id="pyramidVisual">
+                    <div class="pyramid-tier tier-4" onclick="showInfo(4)">
+                        <span id="tier4-text">🦅 Elang</span>
+                    </div>
+                    <div class="pyramid-tier tier-3" onclick="showInfo(3)">
+                        <span id="tier3-text">🐍 Ular</span>
+                    </div>
+                    <div class="pyramid-tier tier-2" onclick="showInfo(2)">
+                        <span id="tier2-text">🐭 Tikus</span>
+                    </div>
+                    <div class="pyramid-tier tier-1" onclick="showInfo(1)">
+                        <span id="tier1-text">🌾 Padi</span>
+                    </div>
+                </div>
+
+                <div class="info-panel" id="infoPanel">
+                    <h3>💡 Informasi</h3>
+                    <p id="infoText">Klik pada tingkat piramida untuk melihat informasi detail!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Management
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const btns = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            btns.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Drag and Drop for Pyramid Builder
+        let draggedElement = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.organism-card');
+            const levels = document.querySelectorAll('.pyramid-level');
+
+            cards.forEach(card => {
+                card.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    this.style.opacity = '0.5';
+                });
+
+                card.addEventListener('dragend', function(e) {
+                    this.style.opacity = '1';
+                });
+            });
+
+            levels.forEach(level => {
+                level.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+
+                level.addEventListener('dragleave', function(e) {
+                    this.classList.remove('drag-over');
+                });
+
+                level.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    const levelType = this.dataset.level;
+                    const organismType = draggedElement.dataset.type;
+                    
+                    if (levelType === organismType) {
+                        const clone = draggedElement.cloneNode(true);
+                        clone.classList.remove('organism-card');
+                        clone.classList.add('placed-organism');
+                        clone.draggable = false;
+                        clone.onclick = function() { this.remove(); };
+                        
+                        const container = this.querySelector('.level-organisms');
+                        container.appendChild(clone);
+                    }
+                });
+            });
+        });
+
+        function checkPyramid() {
+            const levels = [
+                { id: 'level-1', min: 1, name: 'Produsen' },
+                { id: 'level-2', min: 1, name: 'Konsumen Primer' },
+                { id: 'level-3', min: 1, name: 'Konsumen Sekunder' },
+                { id: 'level-4', min: 1, name: 'Konsumen Tersier' }
+            ];
+
+            let allFilled = true;
+            let emptyLevels = [];
+
+            levels.forEach(level => {
+                const count = document.getElementById(level.id).children.length;
+                if (count < level.min) {
+                    allFilled = false;
+                    emptyLevels.push(level.name);
+                }
+            });
+
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+
+            if (allFilled) {
+                feedback.className = 'feedback success';
+                feedback.innerHTML = `
+                    <h3>🎉 Selamat! Piramida Makanan Benar!</h3>
+                    <p>Kamu telah berhasil menyusun piramida makanan dengan benar!</p>
+                    <p><strong>✔</strong> Produsen di tingkat paling bawah</p>
+                    <p><strong>✔</strong> Konsumen tersusun sesuai tingkat trofiknya</p>
+                    <p><strong>✔</strong> Bentuk piramida menyempit ke atas</p>
+                `;
+            } else {
+                feedback.className = 'feedback error';
+                feedback.innerHTML = `
+                    <h3>❌ Belum Sempurna!</h3>
+                    <p>Tingkat yang masih kosong: <strong>${emptyLevels.join(', ')}</strong></p>
+                    <p>💡 Tips: Pastikan setiap tingkat piramida terisi minimal 1 organisme!</p>
+                `;
+            }
+        }
+
+        function resetPyramid() {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('level-' + i).innerHTML = '';
+            }
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'none';
+        }
+
+        // Ecosystem Simulator
+        const ecosystems = {
+            sawah: {
+                tier1: '🌾 Padi (10.000 batang)',
+                tier2: '🐭 Tikus + 🦗 Belalang (200 ekor)',
+                tier3: '🐍 Ular (15 ekor)',
+                tier4: '🦅 Elang (1-2 ekor)',
+                info: [
+                    { level: 4, text: '<strong>Tingkat IV - Elang</strong><br>Populasi: 1-2 ekor<br>Energi: 10 kkal<br>Predator puncak tanpa musuh alami. Membutuhkan wilayah luas untuk berburu.' },
+                    { level: 3, text: '<strong>Tingkat III - Ular</strong><br>Populasi: 15 ekor<br>Energi: 100 kkal<br>Memangsa tikus dan kadal. Berperan mengontrol populasi hewan pengerat.' },
+                    { level: 2, text: '<strong>Tingkat II - Tikus & Belalang</strong><br>Populasi: 200 ekor<br>Energi: 1.000 kkal<br>Herbivora yang memakan padi. Jika tidak terkontrol dapat merusak panen.' },
+                    { level: 1, text: '<strong>Tingkat I - Padi</strong><br>Populasi: 10.000 batang<br>Energi: 10.000 kkal<br>Produsen utama yang menghasilkan energi melalui fotosintesis.' }
+                ]
+            },
+            hutan: {
+                tier1: '🌳 Pohon + 🌿 Semak (Ribuan)',
+                tier2: '🦌 Rusa + 🐰 Kelinci (100 ekor)',
+                tier3: '🐺 Serigala (10 ekor)',
+                tier4: '🐯 Harimau (2-3 ekor)',
+                info: [
+                    { level: 4, text: '<strong>Tingkat IV - Harimau</strong><br>Populasi: 2-3 ekor<br>Predator puncak hutan. Memerlukan wilayah hingga 100 km² untuk berburu.' },
+                    { level: 3, text: '<strong>Tingkat III - Serigala</strong><br>Populasi: 10 ekor<br>Karnivora sosial yang berburu dalam kelompok.' },
+                    { level: 2, text: '<strong>Tingkat II - Rusa & Kelinci</strong><br>Populasi: 100 ekor<br>Herbivora hutan yang memakan dedaunan dan semak.' },
+                    { level: 1, text: '<strong>Tingkat I - Pohon & Semak</strong><br>Populasi: Ribuan<br>Produsen yang menyediakan makanan dan oksigen.' }
+                ]
+            },
+            laut: {
+                tier1: '🌊 Fitoplankton (Miliaran sel)',
+                tier2: '🦐 Zooplankton + 🐟 Ikan Kecil',
+                tier3: '🐠 Ikan Sedang + 🦑 Cumi-cumi',
+                tier4: '🦈 Hiu + 🐋 Paus',
+                info: [
+                    { level: 4, text: '<strong>Tingkat IV - Hiu & Paus</strong><br>Predator puncak laut. Menjaga keseimbangan populasi ikan.' },
+                    { level: 3, text: '<strong>Tingkat III - Ikan Sedang</strong><br>Memangsa ikan kecil dan zooplankton.' },
+                    { level: 2, text: '<strong>Tingkat II - Zooplankton & Ikan Kecil</strong><br>Konsumen pertama yang memakan fitoplankton.' },
+                    { level: 1, text: '<strong>Tingkat I - Fitoplankton</strong><br>Produsen mikroskopis yang menghasilkan 70% oksigen Bumi!' }
+                ]
+            },
+            padang: {
+                tier1: '🌾 Rumput Savana (Luas)',
+                tier2: '🦓 Zebra + 🦒 Jerapah (50 ekor)',
+                tier3: '🐆 Cheetah (5 ekor)',
+                tier4: '🦁 Singa (2-4 ekor)',
+                info: [
+                    { level: 4, text: '<strong>Tingkat IV - Singa</strong><br>Populasi: 2-4 ekor<br>Raja savana yang mengontrol populasi herbivora besar.' },
+                    { level: 3, text: '<strong>Tingkat III - Cheetah</strong><br>Populasi: 5 ekor<br>Pemburu tercepat di darat, memangsa hewan sedang.' },
+                    { level: 2, text: '<strong>Tingkat II - Zebra & Jerapah</strong><br>Populasi: 50 ekor<br>Herbivora besar penghuni padang rumput.' },
+                    { level: 1, text: '<strong>Tingkat I - Rumput Savana</strong><br>Tumbuhan utama yang tahan kekeringan dan api.' }
+                ]
+            }
+        };
+
+        function changeEcosystem() {
+            const selected = document.getElementById('ecosystemSelect').value;
+            const eco = ecosystems[selected];
+            
+            document.getElementById('tier4-text').textContent = eco.tier4;
+            document.getElementById('tier3-text').textContent = eco.tier3;
+            document.getElementById('tier2-text').textContent = eco.tier2;
+            document.getElementById('tier1-text').textContent = eco.tier1;
+            
+            document.getElementById('infoText').innerHTML = 'Klik pada tingkat piramida untuk melihat informasi detail tentang ekosistem ' + selected + '!';
+        }
+
+        function showInfo(level) {
+            const selected = document.getElementById('ecosystemSelect').value;
+            const eco = ecosystems[selected];
+            const info = eco.info.find(i => i.level === level);
+            
+            document.getElementById('infoText').innerHTML = info.text;
+        }
+    </script>
+</body>
+</html>
